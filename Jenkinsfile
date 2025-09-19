@@ -1,29 +1,82 @@
+groovy
 pipeline {
     agent any
+
     stages {
         stage('Build') {
-            steps { echo 'Building the code using Maven...' }
+            steps {
+                echo "Building the application..."
+                // Example: sh 'mvn clean package'
+            }
         }
-        stage('Unit Tests') {
-            steps { echo 'Running unit tests...' }
+
+        stage('Test') {
+            steps {
+                echo "Running unit tests..."
+                // Example: sh 'mvn test'
+            }
+            post {
+                success {
+                    emailext (
+                        to: 'kanthi072190@gmail.com',
+                        subject: "Test Stage Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                        body: """<p><b>Project:</b> ${env.JOB_NAME}</p>
+                                 <p><b>Stage:</b> Test</p>
+                                 <p><b>Result:</b> SUCCESS</p>
+                                 <p><a href="${env.BUILD_URL}console">Console log</a></p>""",
+                        attachLog: true
+                    )
+                }
+                failure {
+                    emailext (
+                        to: 'kanthi072190@gmail.com',
+                        subject: "Test Stage Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                        body: """<p><b>Project:</b> ${env.JOB_NAME}</p>
+                                 <p><b>Stage:</b> Test</p>
+                                 <p><b>Result:</b> FAILURE</p>
+                                 <p><a href="${env.BUILD_URL}console">Console log</a></p>""",
+                        attachLog: true
+                    )
+                }
+            }
         }
-        stage('Integration Tests') {
-            steps { echo 'Running integration tests...' }
-        }
-        stage('Code Analysis') {
-            steps { echo 'Checking code quality using SonarLint...' }
-        }
+
         stage('Security Scan') {
-            steps { echo 'Performing security scan using npm audit...' }
+            steps {
+                echo "Running security scan..."
+                // Example: sh 'mvn sonar:sonar'
+            }
+            post {
+                success {
+                    emailext (
+                        to: 'kanthi072190@gmail.com',
+                        subject: "Security Scan Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                        body: """<p><b>Project:</b> ${env.JOB_NAME}</p>
+                                 <p><b>Stage:</b> Security Scan</p>
+                                 <p><b>Result:</b> SUCCESS</p>
+                                 <p><a href="${env.BUILD_URL}console">Console log</a></p>""",
+                        attachLog: true
+                    )
+                }
+                failure {
+                    emailext (
+                        to: 'kanthi072190@gmail.com ',
+                        subject: "Security Scan Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                        body: """<p><b>Project:</b> ${env.JOB_NAME}</p>
+                                 <p><b>Stage:</b> Security Scan</p>
+                                 <p><b>Result:</b> FAILURE</p>
+                                 <p><a href="${env.BUILD_URL}console">Console log</a></p>""",
+                        attachLog: true
+                    )
+                }
+            }
         }
-        stage('Deploy to Staging') {
-            steps { echo 'Deploying to staging environment...' }
+
+        stage('Deploy') {
+            steps {
+                echo "Deploying application..."
+                // Example: sh './deploy.sh'
+            }
         }
-        stage('Deploy to Production') {
-            steps { echo 'Deploying to production environment...' }
-        }
-    }
-    post {
-        always { echo 'Pipeline finished.' }
     }
 }
